@@ -8,6 +8,8 @@ import enums.Loan;
 import enums.Marital;
 import enums.Month;
 import enums.POutcome;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
@@ -34,7 +36,7 @@ class BankCsvModel {
     private POutcome poutcome;
     private Binary y;
 
-    public BankCsvModel(String[] attributes) {
+    BankCsvModel(String[] attributes) {
         this.age = Double.valueOf(attributes[0]);
         this.job = Job.fromString(attributes[1]);
         this.marital = Marital.valueOf(attributes[2]);
@@ -52,5 +54,30 @@ class BankCsvModel {
         this.previous = Double.valueOf(attributes[14]);
         this.poutcome = POutcome.valueOf(attributes[15]);
         this.y = Binary.valueOf(attributes[16]);
+    }
+
+
+    public double[] toDoubleArray()
+    {
+        double dAge=this.age;
+        double dJob=this.job.ordinal();
+        double dMarital= this.marital.ordinal();
+        double dEducation= this.education.ordinal();
+        double dEDefault= this.eDefault.ordinal();
+        double dBalance = this.balance;
+        double dHousing = this.housing.ordinal();
+        double dLoan = this.loan.ordinal();
+        double dContact = this.contact.ordinal();
+        double dDay = this.day;
+        double dMonth = this.month.ordinal();
+        double dDuration = this.duration;
+        double dCampaign = this.campaign;
+        double dPDay = this.pDays;
+        double dPrevious = this.previous;
+        double dPOutcome = this.poutcome.ordinal();
+        double dY = this.y.ordinal();
+
+        return new double[] {dAge,dJob,dMarital,dEducation,dEDefault,dBalance,dHousing,dLoan,dContact,dDay,dMonth,
+            dDuration,dCampaign, dPDay,dPrevious,dPOutcome,dY};
     }
 }
