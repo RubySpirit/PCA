@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -13,93 +14,67 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 import static org.apache.commons.math3.util.Precision.round;
 
 public class Application {
+    private static BufferedWriter bufferedWriterCov;
 
+    public static void main(String[] args) throws IOException {
+        File covariancefile = Files.createFile(Path.of("PCA.csv")).toFile();
+        bufferedWriterCov = new BufferedWriter(new FileWriter(covariancefile));
 
-  public static void main (String[] args)
-  {
-   List<BankCsvModel> modelList= CsvReader.getBankModelList("bank-full.csv");
-   double [][] array2d = new double[modelList.size()][];
-      for (int i = 0; i < modelList.size() ; i++) {
-          array2d[i] = modelList.get(i).toDoubleArray();
-      }
-/*  double [][]array2d = {
-          {57.5,0.525,57,51,-47},
-          {7.5,0.505,49,47,-69},
-          {-67.5,0.545,49,43,-75},
-          {-77.5,0.515,49,33,-71},
-          {-57.5,0.535,49,29,-75},
-          {-357.5,0.325,25,19,-87}
-  };*/
-      RealMatrix realmatrix = MatrixUtils.createRealMatrix(array2d);
-      Covariance covariance = new Covariance(realmatrix);
-      RealMatrix covarianceMatrix = covariance.getCovarianceMatrix();
-      EigenDecomposition ed = new EigenDecomposition(covarianceMatrix);
-    //      covariance.getCovarianceMatrix().
-
-
-
-
-      double [][] covarianceArray=covarianceMatrix.getData();
-      double [] eigenValues = ed.getRealEigenvalues();
-      //System.out.println(ed.getDeterminant());
-
-      System.out.println("Macierz kowariancji:");
-      printMatrix(covarianceArray);
-      for (int i= 0;i<eigenValues.length;i++)
-      {
-          System.out.println("Wartosc wlasna:;" +ed.getRealEigenvalue(i) + " ");
-          System.out.println("Wektor wlasny:;");
-          for(double var:ed.getEigenvector(i).toArray())
-          {
-              System.out.print(var+";");
-          }
-          System.out.println("");
-      }
-      System.out.println("");
-
-
-  /*    System.out.println("wektory własne");
-
-      for(int i=0;i<ed.getRealEigenvalues().length;i++) {
-          System.out.println(ed.getEigenvector(i));
-      }*/
-      double [][]wyznacznikMacierzy =ed.getD().getData();
-
-
-      System.out.println("Wyznacznik macierzy");
-      printMatrix(wyznacznikMacierzy);
- /*     try {
-          File covariancefile = Files.createFile(Path.of("covariance.csv")).toFile();
-          BufferedWriter bufferedWriterCov = new BufferedWriter(new FileWriter(covariancefile));
-
-          for (double[] doubles : covarianceArray) {
-              double[] dob = doubles;
-              for (double v : dob) {
-                  bufferedWriterCov.write(v + ";");
-              }
-              bufferedWriterCov.newLine();
-          }
-          bufferedWriterCov.flush();
-          bufferedWriterCov.close();
-
-
-      } catch (IOException ioe)
-      {
-          System.out.println("nie udało sie zapisać plików");
-      }*/
-  }
-
-    private static void printMatrix(double[][] wyznacznikMacierzy) {
-        for(double[] wyz:wyznacznikMacierzy)
-        {
-            for (double v: wyz)
-            {
-                System.out.print(" "+ round(v,2)+"  ;");
-            }
-            System.out.println("");
+        //loading file:
+        List<BankCsvModel> modelList = CsvReader.getBankModelList("bank-full.csv");
+        double[][] array2d = new double[modelList.size()][];
+        for (int i = 0; i < modelList.size(); i++) {
+            array2d[i] = modelList.get(i).toDoubleArray();
         }
 
+        RealMatrix realmatrix = MatrixUtils.createRealMatrix(array2d);
+        Covariance covariance = new Covariance(realmatrix);
+        RealMatrix covarianceMatrix = covariance.getCovarianceMatrix();
+        EigenDecomposition ed = new EigenDecomposition(covarianceMatrix);
 
-        System.out.println("");
+        double[][] covarianceArray = covarianceMatrix.getData();
+        double[] eigenValues = ed.getRealEigenvalues();
+
+        saveWithNewLine("Macierz kowariancji:");
+        printMatrix(covarianceArray, 2, bufferedWriterCov);
+        for (int i = 0; i < eigenValues.length; i++) {
+            saveWithNewLine("Wartosc wlasna:;" + ed.getRealEigenvalue(i) + " ");
+            saveWithNewLine("Wektor wlasny:;");
+            for (double var : ed.getEigenvector(i).toArray()) {
+                bufferedWriterCov.write(var + ";");
+            }
+            bufferedWriterCov.newLine();
+        }
+
+        double[][] wyznacznikMacierzy = ed.getV().getData();
+
+
+        saveWithNewLine("Macierz W");
+        printMatrix(wyznacznikMacierzy, 7, bufferedWriterCov);
+
+
+        RealMatrix Wmatrix = ed.getV();
+        RealMatrix wynik = realmatrix.multiply(Wmatrix);
+
+        bufferedWriterCov.write("Wynik pomnożenia bazy przez Macierz W:");
+        printMatrix(wynik.getData(), 5, bufferedWriterCov);
+
+        bufferedWriterCov.flush();
+        bufferedWriterCov.close();
+    }
+
+    private static void printMatrix(double[][] wyznacznikMacierzy, int scale, BufferedWriter bw) throws IOException {
+        for (double[] wyz : wyznacznikMacierzy) {
+            for (double v : wyz) {
+                bw.write(" " + round(v, scale) + "  ;");
+            }
+            bw.newLine();
+        }
+        bw.newLine();
+    }
+
+    private static void saveWithNewLine(String a) throws IOException {
+        bufferedWriterCov.write(a);
+        bufferedWriterCov.newLine();
     }
 }
