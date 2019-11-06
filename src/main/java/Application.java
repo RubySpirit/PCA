@@ -46,17 +46,17 @@ public class Application {
             bufferedWriterCov.newLine();
         }
 
-        double[][] wyznacznikMacierzy = ed.getV().getData();
+        double[][] macierzW = ed.getV().getData();
 
 
         saveWithNewLine("Macierz W");
-        printMatrix(wyznacznikMacierzy, 7, bufferedWriterCov);
-
+        printMatrix(macierzW, 7, bufferedWriterCov);
 
         RealMatrix Wmatrix = ed.getV();
         RealMatrix wynik = realmatrix.multiply(Wmatrix);
 
-        bufferedWriterCov.write("Wynik pomnożenia bazy przez Macierz W:");
+        
+        bufferedWriterCov.write("Wynik pomnozenia bazy przez Macierz W:");
         printMatrix(wynik.getData(), 5, bufferedWriterCov);
 
         bufferedWriterCov.flush();
